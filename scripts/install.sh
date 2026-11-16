@@ -54,14 +54,43 @@ link_skill "$SKILL_SOURCE" "$CLAUDE_SKILLS/expo-project-factory"
 if [ -e "$DEFAULTS_FILE" ] || [ -L "$DEFAULTS_FILE" ]; then
   echo "Keeping existing defaults: $DEFAULTS_FILE"
 else
+  echo
+  echo "Which backend do you usually build on? (sets your defaults; you can change it later)"
+  echo "  1) NestJS + PostgreSQL"
+  echo "  2) Supabase"
+  echo "  3) Firebase"
+  echo "  4) No backend (data stays on the device)"
+  echo "  5) Decide later - the agent proposes one on your first project"
+  CHOICE=""
+  read -r -p "Choose 1-5 [5]: " CHOICE || true
+
+  BACKEND="not decided"
+  DATABASE="not decided"
+  AUTH="not decided"
+  case "$CHOICE" in
+    1) BACKEND="NestJS REST API"; DATABASE="PostgreSQL"; AUTH="JWT issued by the API" ;;
+    2) BACKEND="Supabase"; DATABASE="Supabase Postgres"; AUTH="Supabase Auth" ;;
+    3) BACKEND="Firebase"; DATABASE="Cloud Firestore"; AUTH="Firebase Authentication" ;;
+    4) BACKEND="none (data stays on the device)"; DATABASE="on-device SQLite (expo-sqlite)"; AUTH="none" ;;
+    ""|5) ;;
+    *) echo "Unrecognised choice '$CHOICE'; leaving the backend undecided." ;;
+  esac
+
   mkdir -p "$CONFIG_DIR"
-  cp "$ROOT/templates/defaults.md" "$DEFAULTS_FILE"
+  sed \
+    -e "s|^- Backend / API: .*|- Backend / API: $BACKEND|" \
+    -e "s|^- Database: .*|- Database: $DATABASE|" \
+    -e "s|^- Authentication: .*|- Authentication: $AUTH|" \
+    "$ROOT/templates/defaults.md" > "$DEFAULTS_FILE"
   echo "Created defaults: $DEFAULTS_FILE"
 fi
 
 echo
 echo "Factory skill linked for Codex and Claude Code."
 echo "Next:"
-echo "  1. Edit $DEFAULTS_FILE once with your usual stack."
-echo "  2. Install the official Expo plugin in each agent and restart the sessions."
-echo "  3. Start a project with ./scripts/new-project.sh"
+echo "  1. Install the official Expo plugin in each agent and restart the sessions."
+echo "  2. Start a project with ./scripts/new-project.sh"
+echo
+echo "You do not need to edit the defaults file. After you approve your first plan,"
+echo "the agent offers to save that stack for future projects:"
+echo "  $DEFAULTS_FILE"

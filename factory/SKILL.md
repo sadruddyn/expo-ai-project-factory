@@ -24,7 +24,7 @@ Do not use new-project defaults to restructure an existing project.
 ### Phase 1 — Intake and repository discovery
 
 1. Read the user's project brief. A project name and a few sentences are a complete brief; `PROJECT_BRIEF.md` holds it when the intake script was used.
-2. Read the personal defaults file at `~/.config/expo-project-factory/defaults.md` if it exists. If it is missing or unreadable, say so in one line and use the built-in defaults at the end of this skill.
+2. Read the personal defaults file at `~/.config/expo-project-factory/defaults.md` if it exists. If it is missing or unreadable, say so in one line and use the built-in defaults at the end of this skill. The user is not expected to have edited this file; see "Remembering the user's stack".
 3. Inspect the current directory and existing project files before proposing changes.
 4. For an existing app, inspect at least `package.json`, app config, Expo SDK version, router setup, TypeScript config, current folder conventions, and relevant native/config-plugin files when present.
 5. Never assume the latest Expo SDK is compatible with the user's existing dependency set. Check the actual project version and current official docs.
@@ -42,6 +42,32 @@ The user should not have to restate their stack for every project. Resolve each 
 Treat a defaults line that says `not decided` as open: propose the simplest option that fits the product and list it as an assumption with the source `proposed`.
 
 Do not block the plan on questions. Produce the full plan from the best available answers, and ask at most three questions alongside it, only for choices that would be expensive to reverse once the first implementation phase is done (for example, the backend, or whether web is a target). Never ask for something the brief or the defaults file already states.
+
+### Remembering the user's stack
+
+The defaults file fills itself in from what the user approves, so they never have to edit it by hand.
+
+**After a plan is approved.** If the approved plan settled any reusable stack decision that the defaults file does not already record (the file is missing, the line says `not decided`, or the user corrected your proposal), offer once, in the same reply that starts the approved phase:
+
+> Save these as your defaults for future projects?
+> - Backend / API: …
+> - Database: …
+
+List exactly the lines you would write, one per line, so each can be read and struck out. Write the file only after the user says yes, and write only the lines they did not strike. Do not hold up the approved phase while waiting for the answer.
+
+Leave a decision out of the offer while a question you asked about it is still unanswered. A bare "approved" does not answer an open question; offer that decision later, once the user has settled it.
+
+**When the user states a standing preference.** If the user says something like "from now on use Supabase" or "always use NativeWind", show the line you will change and update it once they confirm. A standing preference applies to future projects; ask before changing the project already in progress to match it.
+
+Rules for writing the file:
+
+- Reusable stack decisions only: platforms, state management, data fetching, styling, backend, database, authentication, local storage, testing, package manager, and standing constraints. Never save product-specific choices such as a currency, a screen list, or one project's feature scope.
+- Change only the lines the user agreed to, keeping each line's existing `- <Decision>:` label. Leave every other line, including the user's own notes, exactly as it is.
+- If the file does not exist, create it with a `## Stack` heading and one `- <Decision>: <value>` line per saved decision.
+- If the user declines, do not ask again in this session. If they say never to ask, add `- Do not offer to save defaults` under "Anything else the agent should always know" and respect that line in future sessions.
+- A one-project override ("this app uses Firebase") is not a standing preference. Do not offer to save it over an existing default.
+
+This is the only file outside the project that this skill may write, and only with the user's explicit yes.
 
 ### Phase 2 — Skill discovery and routing
 
@@ -101,7 +127,7 @@ For an existing project, preserve its current conventions unless there is a conc
 
 ### Phase 4 — Approval gate
 
-- Do not create, edit, delete, move, or overwrite project files during planning.
+- Do not create, edit, delete, move, or overwrite project files during planning. The same applies to the personal defaults file.
 - Do not install dependencies or run migrations during planning.
 - Do not run destructive commands.
 - Wait for explicit user approval.
