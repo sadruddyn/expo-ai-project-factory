@@ -12,6 +12,19 @@ A reusable, GitHub-hosted workflow for starting Expo / React Native projects wit
 
 The factory skill is the orchestrator. Official Expo skills remain the source of Expo-specific implementation guidance.
 
+## Quick start
+
+```bash
+git clone https://github.com/sadruddyn/expo-ai-project-factory.git
+cd expo-ai-project-factory
+./scripts/install.sh        # links the skill, creates your defaults file
+./scripts/new-project.sh    # asks for a project name and a brief
+```
+
+Edit `~/.config/expo-project-factory/defaults.md` once with your usual stack. After that, each new project needs only a name and a brief: the agent takes everything else from your defaults, lists what it assumed, and waits for your approval before writing code.
+
+You also need the official Expo plugin in your agent (section 4). The sections below explain each step.
+
 ## 1. Prerequisites
 
 - macOS or Linux
@@ -20,14 +33,13 @@ The factory skill is the orchestrator. Official Expo skills remain the source of
 - Codex CLI and/or Claude Code CLI
 - GitHub CLI (`gh`) is optional, only needed to create/push the GitHub repository from Terminal
 
-## 2. Put this folder in your development directory
-
-Example:
+## 2. Get the repository
 
 ```bash
 mkdir -p ~/Development
-# Extract this archive into ~/Development/
-cd ~/Development/expo-ai-project-factory
+cd ~/Development
+git clone https://github.com/sadruddyn/expo-ai-project-factory.git
+cd expo-ai-project-factory
 ```
 
 ## 3. Install the factory skill for both agents
@@ -42,6 +54,10 @@ The installer creates symlinks:
 - `~/.claude/skills/expo-project-factory` for Claude Code
 
 Symlinks keep the installed skill synced with this Git repository when you pull updates.
+
+It also creates your personal defaults file at `~/.config/expo-project-factory/defaults.md` from `templates/defaults.md`. Open it once and fill in your usual stack (platforms, backend, database, authentication, libraries you prefer). The skill reads it for every project, so you do not repeat these choices in each brief. Lines left as `not decided` are proposed by the agent and shown as assumptions in the plan.
+
+Rerunning the installer is safe: it never overwrites an existing skill path or an existing defaults file.
 
 ## 4. Install the official Expo plugin in each agent
 
@@ -74,6 +90,7 @@ Restart both agent sessions after installing plugins.
 Expected:
 - Both factory skill paths exist and resolve to this repository.
 - The skill metadata is readable.
+- Your personal defaults file is reported if it exists.
 - The Expo skill/plugin installation is reported when the relevant CLI is available.
 
 The verification script does not claim that a plugin is installed merely because its CLI exists. Confirm the Expo plugin in the agent's plugin UI as well.
@@ -97,47 +114,39 @@ Or, if GitHub CLI is installed and authenticated:
 gh repo create expo-ai-project-factory --private --source=. --remote=origin --push
 ```
 
-## 7. Use it for a new project (interactive)
+## 7. Use it for a new project
 
-Run the interactive intake script:
+Run the intake script:
 
 ```bash
 ./scripts/new-project.sh
 ```
 
-It asks for the project name, a multi-line project description, platforms, project type, backend, database, authentication, native features, design references, constraints, and destination folder. It shows a summary and asks for confirmation before creating the workspace.
+It asks for two things: the project name and a multi-line project description. It then shows a summary and asks for confirmation before creating the workspace. Platforms, backend, database, authentication and the rest are not asked; the agent takes them from the description, then from your defaults file.
 
-You can optionally pass a parent directory:
+The workspace is created at `~/Development/<project-name-as-a-slug>`. To use a different parent directory, pass it as an argument:
 
 ```bash
 ./scripts/new-project.sh ~/Development/ClientApps
 ```
 
-The script creates `PROJECT_BRIEF.md` and `FACTORY_START_HERE.md`. It does not generate the app or install dependencies. Open the generated folder in Codex or Claude Code and ask it to follow `FACTORY_START_HERE.md`.
+The script creates `PROJECT_BRIEF.md` and `FACTORY_START_HERE.md`. It does not generate the app or install dependencies. Open the generated folder in Codex or Claude Code and send the prompt in `FACTORY_START_HERE.md`.
 
-If you prefer to skip the script, open a new, empty project directory in Codex or Claude Code and give a short brief directly:
+If you prefer to skip the script, open a new, empty project directory in Codex or Claude Code and give the brief directly:
 
 ```text
 Use the expo-project-factory skill.
 
 Project: Grocery shopping app.
-Platforms: iOS and Android.
 Users can create shopping lists, browse stores, add products,
 receive store-distance alerts, and use Siri shortcuts.
-Backend: NestJS + PostgreSQL.
 
-First inspect the directory and requirements.
-Do not create or modify files yet.
-Return:
-1. Clarifying questions (only if essential)
-2. Relevant Expo skills and why
-3. Architecture and folder structure
-4. Dependency choices with compatibility checks
-5. Implementation phases
-6. Risks and verification commands
-
-Wait for my explicit approval before implementation.
+Prepare the plan and wait for my approval.
 ```
+
+To override a default for one project, say so in the brief (for example, "Backend: Supabase" or "Web only").
+
+The plan ends with an "Assumptions" list showing every choice the agent made for you and where it came from. Correct anything there before approving.
 
 After reviewing the plan, reply:
 

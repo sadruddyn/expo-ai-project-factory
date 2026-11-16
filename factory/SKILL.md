@@ -23,15 +23,29 @@ Do not use new-project defaults to restructure an existing project.
 
 ### Phase 1 — Intake and repository discovery
 
-1. Read the user's project brief.
-2. Inspect the current directory and existing project files before proposing changes.
-3. For an existing app, inspect at least `package.json`, app config, Expo SDK version, router setup, TypeScript config, current folder conventions, and relevant native/config-plugin files when present.
-4. Ask only essential clarifying questions. Do not ask for details that can be safely deferred.
+1. Read the user's project brief. A project name and a few sentences are a complete brief; `PROJECT_BRIEF.md` holds it when the intake script was used.
+2. Read the personal defaults file at `~/.config/expo-project-factory/defaults.md` if it exists. If it is missing or unreadable, say so in one line and use the built-in defaults at the end of this skill.
+3. Inspect the current directory and existing project files before proposing changes.
+4. For an existing app, inspect at least `package.json`, app config, Expo SDK version, router setup, TypeScript config, current folder conventions, and relevant native/config-plugin files when present.
 5. Never assume the latest Expo SDK is compatible with the user's existing dependency set. Check the actual project version and current official docs.
+
+### Filling the gaps in a short brief
+
+The user should not have to restate their stack for every project. Resolve each decision the brief leaves open in this order, and stop at the first source that answers it:
+
+1. The brief and the user's messages in this session.
+2. The existing project's code and its own instruction files.
+3. The personal defaults file.
+4. What the product described in the brief needs (for example, "store-distance alerts" implies location and notifications).
+5. The built-in defaults at the end of this skill.
+
+Treat a defaults line that says `not decided` as open: propose the simplest option that fits the product and list it as an assumption with the source `proposed`.
+
+Do not block the plan on questions. Produce the full plan from the best available answers, and ask at most three questions alongside it, only for choices that would be expensive to reverse once the first implementation phase is done (for example, the backend, or whether web is a target). Never ask for something the brief or the defaults file already states.
 
 ### Phase 2 — Skill discovery and routing
 
-1. For every Expo/EAS task, load `expo-overview` first if it is installed.
+1. For every Expo/EAS task, load `expo-overview` first if it is installed. Skills from the official Expo plugin may appear under a namespace, such as `expo:expo-overview`; treat those as the same skills.
 2. Discover installed Expo skills by their metadata and descriptions. Do not assume a skill is installed merely because its name appears in this file.
 3. Select only skills relevant to the task. Explain each selected skill in one short line.
 4. Read the full `SKILL.md` of each selected skill before making implementation decisions.
@@ -77,6 +91,11 @@ Return a concise plan with:
 11. Security, privacy, accessibility, and performance considerations.
 12. Implementation phases.
 13. Exact verification commands and expected outcomes.
+14. Assumptions: every decision the brief did not state, each with its value and its source (`defaults file`, `inferred from brief`, `built-in default`, or `proposed`), so the user can correct any of them in one reply.
+
+If the brief or the defaults file names a backend, find out whether it already exists. When it does not, include it in the architecture, dependency and phase sections as its own folder beside the app, and ask the user to confirm that this project should build it.
+
+For a new project, the workspace may already contain `PROJECT_BRIEF.md` and `FACTORY_START_HERE.md` from the intake script. Keep both files, and say in the plan how the app will be scaffolded next to them.
 
 For an existing project, preserve its current conventions unless there is a concrete reason to change them.
 
@@ -95,7 +114,7 @@ For an existing project, preserve its current conventions unless there is a conc
 After approval:
 
 1. Re-check relevant official Expo documentation and package compatibility.
-2. Use `npx expo install` for Expo-compatible packages where appropriate.
+2. Use `expo install` for Expo-compatible packages where appropriate, run through the package manager the project or the defaults file specifies (`npx expo install` when none is specified).
 3. Keep TypeScript strict; avoid `any` and empty catch blocks.
 4. Avoid unnecessary dependencies and abstractions.
 5. Explain native changes, config plugins, permissions, and rebuild requirements.
@@ -103,9 +122,12 @@ After approval:
 7. Never claim a check passed unless it was run and its output supports that claim.
 8. Report blockers, unrun checks, changed files, and next steps.
 
-## User's default engineering preferences
+## Built-in defaults
+
+Use these only for decisions that the brief, the project, and the personal defaults file all leave open.
 
 - Expo + React Native + TypeScript.
+- Target iOS and Android.
 - Prefer Expo Router where appropriate.
 - Prefer native folders/prebuild when native configuration is required; do not hide important native changes.
 - Avoid unnecessary libraries, excessive abstractions, and over-engineered folder structures.
@@ -115,4 +137,4 @@ After approval:
 - Plan first; wait for approval before modifying files.
 - Prefer practical, maintainable implementations over enterprise-style boilerplate.
 
-These are defaults, not rigid requirements. Project-specific instructions and explicit user choices take precedence.
+These are defaults, not rigid requirements. The personal defaults file, project-specific instructions, and explicit user choices take precedence, in the order given under "Filling the gaps in a short brief".
