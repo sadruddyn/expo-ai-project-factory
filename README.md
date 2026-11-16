@@ -97,9 +97,25 @@ Or, if GitHub CLI is installed and authenticated:
 gh repo create expo-ai-project-factory --private --source=. --remote=origin --push
 ```
 
-## 7. Use it for a new project
+## 7. Use it for a new project (interactive)
 
-Open a new, empty project directory in Codex or Claude Code and give a short brief:
+Run the interactive intake script:
+
+```bash
+./scripts/new-project.sh
+```
+
+It asks for the project name, a multi-line project description, platforms, project type, backend, database, authentication, native features, design references, constraints, and destination folder. It shows a summary and asks for confirmation before creating the workspace.
+
+You can optionally pass a parent directory:
+
+```bash
+./scripts/new-project.sh ~/Development/ClientApps
+```
+
+The script creates `PROJECT_BRIEF.md` and `FACTORY_START_HERE.md`. It does not generate the app or install dependencies. Open the generated folder in Codex or Claude Code and ask it to follow `FACTORY_START_HERE.md`.
+
+If you prefer to skip the script, open a new, empty project directory in Codex or Claude Code and give a short brief directly:
 
 ```text
 Use the expo-project-factory skill.
