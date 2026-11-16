@@ -1,129 +1,147 @@
 # Expo AI Project Factory
 
-A reusable, GitHub-hosted workflow for starting Expo / React Native projects with Codex and Claude Code.
+Start an Expo / React Native app by giving an AI coding agent a project name and a short brief. The agent (Claude Code or Codex) picks the right Expo skills, proposes the architecture and phases, lists every assumption it made, and waits for your approval before it writes any code.
 
-## What this repository does
-
-- Installs one reusable `expo-project-factory` agent skill into Codex and Claude Code user-level skill directories.
-- Routes each new project brief to the relevant official Expo skills.
-- Requires a discovery and planning phase before implementation.
-- Preserves existing project conventions; it does not blindly restructure existing apps.
-- Includes verification scripts.
-
-The factory skill is the orchestrator. Official Expo skills remain the source of Expo-specific implementation guidance.
+<p align="center">
+  <img src="docs/how-it-works.svg" alt="Four steps: install once, give a name and a brief, the agent writes a plan without changing files, you approve and it builds one phase at a time." width="980">
+</p>
 
 ## Quick start
 
+You need macOS or Linux, Git, and Claude Code or Codex.
+
+**1. Install (once)**
+
 ```bash
 git clone https://github.com/sadruddyn/expo-ai-project-factory.git
 cd expo-ai-project-factory
-./scripts/install.sh        # links the skill, asks one question about your usual backend
-./scripts/new-project.sh    # asks for a project name and a brief
-```
-
-You also need the official Expo plugin in your agent (section 4).
-
-Each new project needs only a name and a brief. The agent proposes the rest, lists what it assumed, and waits for your approval before writing code. There is no configuration file to fill in: after you approve your first plan, the agent offers to remember that stack, and later projects reuse it.
-
-The sections below explain each step.
-
-## 1. Prerequisites
-
-- macOS or Linux
-- Git
-- Node.js + npm
-- Codex CLI and/or Claude Code CLI
-
-## 2. Get the repository
-
-```bash
-mkdir -p ~/Development
-cd ~/Development
-git clone https://github.com/sadruddyn/expo-ai-project-factory.git
-cd expo-ai-project-factory
-```
-
-## 3. Install the factory skill for both agents
-
-```bash
-chmod +x scripts/*.sh
 ./scripts/install.sh
 ```
 
-The installer creates symlinks:
-- `~/.agents/skills/expo-project-factory` for Codex
-- `~/.claude/skills/expo-project-factory` for Claude Code
+The installer asks one question, your usual backend. Press ENTER to decide later.
 
-Symlinks keep the installed skill synced with this Git repository when you pull updates.
-
-It also creates your personal defaults file at `~/.config/expo-project-factory/defaults.md`. The installer asks one question, your usual backend (NestJS + PostgreSQL, Supabase, Firebase, no backend, or decide later), and press ENTER to decide later.
-
-You do not need to edit this file. The skill reads it for every project and keeps it up to date with your approval:
-
-- A line that says `not decided` is proposed by the agent and shown as an assumption in the plan.
-- After you approve a plan, the agent offers to save the approved stack as your defaults. It writes the file only if you say yes.
-- To change a default later, tell the agent, for example "from now on use Supabase".
-- To use something different for one project only, say so in that project's brief.
-
-The file starts with a few engineering preferences (for example, avoid unnecessary libraries). They are ordinary lines; change or delete any of them, by hand or by asking the agent.
-
-Rerunning the installer is safe: it never overwrites an existing skill path or an existing defaults file. To be asked the backend question again, delete the defaults file and rerun it.
-
-## 4. Install the official Expo plugin in each agent
-
-Expo's official recommendation for Codex and Claude Code is to install the Expo plugin from each agent's marketplace. It includes Expo skills and configures the Expo MCP server.
-
-Claude Code:
+**2. Add the official Expo plugin to your agent (once)**
 
 ```bash
-claude plugin install expo@claude-plugins-official
+claude plugin install expo@claude-plugins-official   # Claude Code
+codex plugin add expo@openai-curated                 # Codex
 ```
 
-Codex:
+Restart the agent afterwards.
 
-```bash
-codex plugin add expo@openai-curated
-```
-
-If a command is unavailable in your installed CLI version, use the agent's plugin UI:
-- Claude Code: `/plugin`
-- Codex: `/plugins`
-
-Restart both agent sessions after installing plugins.
-
-## 5. Verify
-
-```bash
-./scripts/verify.sh
-```
-
-Expected:
-- Both factory skill paths exist and resolve to this repository.
-- The skill metadata is readable.
-- Your personal defaults file is reported if it exists.
-- The Expo skill/plugin installation is reported when the relevant CLI is available.
-
-The verification script does not claim that a plugin is installed merely because its CLI exists. Confirm the Expo plugin in the agent's plugin UI as well.
-
-## 6. Use it for a new project
-
-Run the intake script:
+**3. Start a project (every time)**
 
 ```bash
 ./scripts/new-project.sh
 ```
 
-It asks for two things: the project name and a project description. Type or paste the description and press ENTER to submit it; a description pasted as several lines is taken whole. It then shows a summary and asks for confirmation before creating the workspace. Platforms, backend, database, authentication and the rest are not asked; the agent takes them from the description, then from your defaults file.
+Type a project name, then describe the app and press ENTER. The script creates the project folder and offers to open your agent with the first message already sent.
 
-The workspace is created at `~/Development/<project-name-as-a-slug>`. To use a different parent directory, pass it as an argument:
+That is all. There is no configuration file to fill in.
 
-```bash
-./scripts/new-project.sh ~/Development/ClientApps
+## What it looks like
+
+### You give a name and a brief
+
+```text
+$ ./scripts/new-project.sh
+
+Project name: Salon Booking
+
+Describe the project in your own words, then press ENTER to submit.
+(Pasting several lines at once is fine.)
+
+> Customers browse nearby salons, pick a service and a time slot, and book. They get a reminder one hour before. Salon owners manage their slots.
+
+--------------- Project Summary ---------------
+Name:     Salon Booking
+Folder:   /Users/you/Development/salon-booking
+...
+Create this project workspace? (y/N): y
+
+Project workspace created successfully:
+  /Users/you/Development/salon-booking
+
+Open the project in Claude Code now? (Y/n):
 ```
 
-The script creates `PROJECT_BRIEF.md` and `FACTORY_START_HERE.md`. It does not generate the app or install dependencies. Open the generated folder in Codex or Claude Code and send the prompt in `FACTORY_START_HERE.md`.
+Press ENTER and the agent opens in the new folder and starts on the plan. If you answer `n`, or no agent is found, the script prints the two things to do yourself:
 
-If you prefer to skip the script, open a new, empty project directory in Codex or Claude Code and give the brief directly:
+```text
+cd ~/Development/salon-booking && claude      (or: codex)
+```
+
+then send the agent this message:
+
+```text
+Follow FACTORY_START_HERE.md
+```
+
+### The agent sends back a plan
+
+The plan covers the product, the Expo skills it selected, folder structure, screens, state and data, authentication, native features, dependencies with a reason for each, phases, and the commands that verify each phase. No file has been created at this point.
+
+It ends with the part worth reading first, an **Assumptions** list. A shortened example from a real run of the brief above:
+
+| Decision | Value | Source |
+|---|---|---|
+| Platforms | iOS + Android, no web | defaults file |
+| Backend | NestJS REST API | defaults file |
+| Data fetching | TanStack Query | proposed |
+| Authentication | Email and password | proposed |
+| "Nearby" | Device location, list sorted by distance, no map | inferred from brief |
+| Reminder | Local notification, one hour before | inferred from brief |
+| Payments | Out of scope | inferred from brief |
+
+It may also ask up to three questions, only about choices that are expensive to change later, such as whether the backend already exists.
+
+### You correct, then approve
+
+Fix anything in one reply ("use phone sign-in, and add a map"), or approve:
+
+```text
+Approved. Implement Phase 1 only.
+```
+
+The agent then builds that phase, runs the checks, and reports what changed. Each later phase needs its own approval.
+
+### It remembers your stack
+
+After your first approval the agent asks:
+
+```text
+Save these as your defaults for future projects?
+- Data fetching: TanStack Query
+- Authentication: Email and password
+```
+
+Say yes and your next project starts from those choices, so you are not asked again. To change one later, tell the agent: "from now on use Supabase". To differ for one project only, say so in that project's brief.
+
+## How the agent fills the gaps
+
+For anything your brief does not say, the agent uses the first source that has an answer:
+
+1. Your brief and your messages.
+2. The existing project's code, if there is one.
+3. Your saved defaults (`~/.config/expo-project-factory/defaults.md`).
+4. What the product needs (for example, "store-distance alerts" implies location and notifications).
+5. The skill's built-in defaults: Expo, TypeScript, Expo Router, iOS and Android, few dependencies.
+
+Every choice from sources 3 to 5 appears in the Assumptions list with its source.
+
+## Questions
+
+**Do I have to edit a defaults file?**
+No. The agent proposes what is missing and offers to save what you approve. The file is plain text if you want to read or change it.
+
+**Will it write code without asking?**
+It is instructed not to: planning never touches files, and each phase needs your approval. An instruction is not a guarantee, so keep your agent's own approval prompts switched on.
+
+**Can I use it on an existing app?**
+Yes. Open the app in your agent and say "Use the expo-project-factory skill" with what you want done. The skill inspects the project first and keeps its existing structure and conventions.
+
+**Can I skip the script?**
+Yes. In an empty folder, tell the agent:
 
 ```text
 Use the expo-project-factory skill.
@@ -135,31 +153,107 @@ receive store-distance alerts, and use Siri shortcuts.
 Prepare the plan and wait for my approval.
 ```
 
-To override a default for one project, say so in the brief (for example, "Backend: Supabase" or "Web only").
+**Where does my project folder go?**
+`~/Development/<project-name>`. Pass a different parent folder as an argument: `./scripts/new-project.sh ~/Projects/Clients`.
 
-The plan ends with an "Assumptions" list showing every choice the agent made for you and where it came from. Correct anything there before approving. Once you approve, the agent offers to save the stack choices as your defaults, so the next project starts from them.
+**Does it cost anything?**
+The factory is free. You pay for your agent as usual. The skill is told not to add paid services without asking.
 
-After reviewing the plan, reply:
+## Reference
 
-```text
-Approved. Implement Phase 1 only. Show changed files and verification results.
-```
+<details>
+<summary><b>What the installer changes on your machine</b></summary>
 
-## 7. Updating
+`./scripts/install.sh` creates:
 
-Update the factory:
+- `~/.claude/skills/expo-project-factory`, a symlink to this repository's `factory/` folder, for Claude Code.
+- `~/.agents/skills/expo-project-factory`, the same symlink for Codex.
+- `~/.config/expo-project-factory/defaults.md`, your personal defaults, copied from `templates/defaults.md`.
+
+It never overwrites anything. If a skill path already exists and is not this symlink, it stops before changing anything. An existing defaults file is kept and the backend question is skipped.
+
+Because the skill is a symlink, `git pull` in this repository updates it.
+
+</details>
+
+<details>
+<summary><b>The defaults file</b></summary>
+
+`~/.config/expo-project-factory/defaults.md` holds your usual stack (platforms, state management, data fetching, styling, backend, database, authentication, storage, testing, package manager) and a few engineering preferences, such as avoiding unnecessary libraries.
+
+- A line that says `not decided` is proposed by the agent for each project.
+- The agent writes to this file only after you say yes, and only the lines you agreed to.
+- Every line is yours to change or delete, by hand or by asking the agent.
+- To be asked the installer's backend question again, delete the file and rerun `./scripts/install.sh`.
+
+</details>
+
+<details>
+<summary><b>Check the installation</b></summary>
 
 ```bash
-cd ~/Development/expo-ai-project-factory
+./scripts/verify.sh
+```
+
+It reports whether both skill links exist and point at this repository, whether the skill metadata is readable, and whether your defaults file exists. It cannot see inside your agent, so confirm the Expo plugin there: `/plugin` in Claude Code, `/plugins` in Codex.
+
+</details>
+
+<details>
+<summary><b>Update</b></summary>
+
+```bash
+cd expo-ai-project-factory
 git pull
 ./scripts/verify.sh
 ```
 
-Update Expo plugins from their respective marketplaces. For skills installed through the skills CLI instead of plugins, use `npx skills@latest update`.
+Update the Expo plugin from your agent's plugin marketplace.
 
-## Important operating rules
+</details>
 
-- The factory is guidance and orchestration, not a guarantee that every agent will obey every instruction. Keep approval controls enabled in the agent UI.
-- Do not let the agent install packages, change native files, run destructive commands, or create credentials without approval.
-- For an existing app, audit its current architecture first. Never apply a new-project folder template blindly.
-- Expo documentation, Expo CLI, and EAS CLI are the source of truth; skill instructions are supporting guidance.
+<details>
+<summary><b>Uninstall</b></summary>
+
+```bash
+rm ~/.claude/skills/expo-project-factory ~/.agents/skills/expo-project-factory
+rm -r ~/.config/expo-project-factory
+```
+
+Then delete this repository folder. Projects you created are not affected.
+
+</details>
+
+<details>
+<summary><b>Troubleshooting</b></summary>
+
+**"Refusing to overwrite existing path"** during install: something else already exists at one of the skill paths, often a link to an older copy of this repository in another folder. Remove that path and rerun the installer.
+
+**The agent does not know the skill:** restart the agent after installing, then run `./scripts/verify.sh`.
+
+**The agent does not use Expo skills:** the official Expo plugin is missing. Install it (Quick start, step 2) and restart the agent.
+
+**"Refusing to write into a non-empty directory":** a folder with that project name already exists and has files in it. Choose another name or another parent folder.
+
+**The plugin install command is not recognised:** use the plugin screen inside the agent instead, `/plugin` in Claude Code or `/plugins` in Codex.
+
+</details>
+
+<details>
+<summary><b>What is in this repository</b></summary>
+
+- `factory/SKILL.md`: the skill, the instructions the agent follows.
+- `scripts/install.sh`, `scripts/verify.sh`, `scripts/new-project.sh`: the three commands above.
+- `templates/defaults.md`: the starting defaults file.
+- `templates/project-brief.md`, `templates/approval-prompt.md`: optional longer brief and ready-made approval messages.
+
+The factory skill only orchestrates. Expo-specific guidance comes from the official Expo skills and documentation.
+
+</details>
+
+## Good to know
+
+- Tested on macOS with Claude Code. The scripts are written for Linux as well, and the skill for Codex, but neither has been tested yet.
+- The skill is guidance for the agent, not enforcement. Keep approval controls enabled in your agent.
+- Do not let the agent install packages, change native files, run destructive commands, or create credentials without your approval.
+- Expo documentation, Expo CLI, and EAS CLI are the source of truth. The skill is supporting guidance.
