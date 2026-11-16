@@ -115,6 +115,7 @@ You can optionally pass a parent directory:
 
 The script creates `PROJECT_BRIEF.md` and `FACTORY_START_HERE.md`. It does not generate the app or install dependencies. Open the generated folder in Codex or Claude Code and ask it to follow `FACTORY_START_HERE.md`.
 
+If you prefer to skip the script, open a new, empty project directory in Codex or Claude Code and give a short brief directly:
 
 ```text
 Use the expo-project-factory skill.
