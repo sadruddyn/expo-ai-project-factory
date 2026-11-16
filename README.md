@@ -113,7 +113,7 @@ Run the intake script:
 ./scripts/new-project.sh
 ```
 
-It asks for two things: the project name and a multi-line project description. It then shows a summary and asks for confirmation before creating the workspace. Platforms, backend, database, authentication and the rest are not asked; the agent takes them from the description, then from your defaults file.
+It asks for two things: the project name and a project description. Type or paste the description and press ENTER to submit it; a description pasted as several lines is taken whole. It then shows a summary and asks for confirmation before creating the workspace. Platforms, backend, database, authentication and the rest are not asked; the agent takes them from the description, then from your defaults file.
 
 The workspace is created at `~/Development/<project-name-as-a-slug>`. To use a different parent directory, pass it as an argument:
 

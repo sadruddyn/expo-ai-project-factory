@@ -24,8 +24,15 @@ echo "          New Project Setup"
 echo "======================================"
 echo
 
+# Remove control characters (for example a stray ESC keypress); keeps tabs,
+# newlines and all UTF-8 text.
+clean() {
+  LC_ALL=C tr -d '\000-\010\013-\037\177'
+}
+
 PROJECT_NAME=""
 read -r -p "Project name: " PROJECT_NAME || true
+PROJECT_NAME="$(printf '%s' "$PROJECT_NAME" | clean)"
 if [ -z "$PROJECT_NAME" ]; then
   echo "Project name is required."
   exit 1
@@ -39,16 +46,26 @@ if [ -z "$SLUG" ]; then
 fi
 
 echo
-echo "Describe the project in your own words."
-echo "You can enter multiple lines. Press ENTER on an empty line when finished:"
+echo "Describe the project in your own words, then press ENTER to submit."
+echo "(Pasting several lines at once is fine.)"
 echo
 BRIEF=""
-while IFS= read -r line; do
-  [ -z "$line" ] && break
-  if [ -n "$BRIEF" ]; then
-    BRIEF+=$'\n'
-  fi
-  BRIEF+="$line"
+read -r -p "> " BRIEF || true
+
+# ENTER submits. When a multi-line description is pasted into a terminal, the
+# remaining lines arrive immediately after the first, so collect whatever is
+# already waiting instead of letting it spill into the confirmation prompt.
+if [ -t 0 ]; then
+  if [ "${BASH_VERSINFO[0]}" -ge 4 ]; then PASTE_WAIT=0.2; else PASTE_WAIT=1; fi
+  while IFS= read -r -t "$PASTE_WAIT" line; do
+    BRIEF+=$'\n'"$line"
+  done
+fi
+
+# Command substitution also trims trailing blank lines.
+BRIEF="$(printf '%s' "$BRIEF" | clean)"
+while [ "${BRIEF#$'\n'}" != "$BRIEF" ]; do
+  BRIEF="${BRIEF#$'\n'}"
 done
 
 if [ -z "$BRIEF" ]; then
