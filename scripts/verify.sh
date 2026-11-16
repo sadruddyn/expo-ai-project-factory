@@ -40,6 +40,13 @@ if [ -L "$CLAUDE_LINK" ]; then
     || { echo "FAIL  Claude symlink target"; FAILED=1; }
 fi
 
+DEFAULTS_FILE="$HOME/.config/expo-project-factory/defaults.md"
+if [ -f "$DEFAULTS_FILE" ]; then
+  echo "PASS  Personal defaults: $DEFAULTS_FILE"
+else
+  echo "INFO  No personal defaults at $DEFAULTS_FILE; the skill will use its built-in defaults. Run scripts/install.sh to create the file."
+fi
+
 echo
 if command -v codex >/dev/null 2>&1; then
   echo "INFO  Codex CLI found. Confirm Expo plugin in /plugins."
