@@ -122,21 +122,63 @@ then from the factory skill's built-in defaults. List every assumption in the
 plan so it can be corrected before implementation.
 EOF
 
-cat > "$DEST/FACTORY_START_HERE.md" <<'EOF'
+START_PROMPT='Use the `expo-project-factory` skill. Read `PROJECT_BRIEF.md` and prepare the plan. Do not create or modify files, install dependencies, or run destructive commands. Wait for my explicit approval before implementation.'
+
+cat > "$DEST/FACTORY_START_HERE.md" <<EOF
 # Start here
 
-Open this folder in Codex or Claude Code, then send:
+Open this folder in Claude Code or Codex, then send this message:
 
-Use the `expo-project-factory` skill. Read `PROJECT_BRIEF.md` and prepare the plan.
-Do not create or modify files, install dependencies, or run destructive commands.
-Wait for my explicit approval before implementation.
+$START_PROMPT
+
+After you have read the plan, reply:
+
+Approved. Implement Phase 1 only.
 EOF
 
 echo
 echo "Project workspace created successfully:"
 echo "  $DEST"
+
+# Offer to open the agent with the first message already sent. Only in a real
+# terminal, so piped and scripted runs never launch anything.
+if [ -t 0 ] && [ -t 1 ]; then
+  HAS_CLAUDE=0
+  HAS_CODEX=0
+  command -v claude >/dev/null 2>&1 && HAS_CLAUDE=1
+  command -v codex >/dev/null 2>&1 && HAS_CODEX=1
+  AGENT=""
+  ANSWER=""
+  echo
+  if [ "$HAS_CLAUDE" -eq 1 ] && [ "$HAS_CODEX" -eq 1 ]; then
+    read -r -p "Open the project now? 1) Claude Code  2) Codex  ENTER) not now: " ANSWER || true
+    case "$ANSWER" in
+      1) AGENT="claude" ;;
+      2) AGENT="codex" ;;
+    esac
+  elif [ "$HAS_CLAUDE" -eq 1 ]; then
+    read -r -p "Open the project in Claude Code now? (Y/n): " ANSWER || ANSWER="n"
+    case "$ANSWER" in ""|y|Y|yes|YES) AGENT="claude" ;; esac
+  elif [ "$HAS_CODEX" -eq 1 ]; then
+    read -r -p "Open the project in Codex now? (Y/n): " ANSWER || ANSWER="n"
+    case "$ANSWER" in ""|y|Y|yes|YES) AGENT="codex" ;; esac
+  fi
+
+  if [ -n "$AGENT" ]; then
+    echo "Opening $AGENT in $DEST and asking it for the plan..."
+    cd "$DEST"
+    exec "$AGENT" "$START_PROMPT"
+  fi
+fi
+
 echo
 echo "Next steps:"
-echo "  1. Open this folder in Codex or Claude Code."
-echo "  2. Send the prompt in FACTORY_START_HERE.md."
-echo "  3. Review the plan and its assumptions, then approve Phase 1."
+echo "  1. Open the project in your agent:"
+echo "       cd \"$DEST\" && claude      (or: codex)"
+echo "  2. Send this message:"
+echo
+echo "       Follow FACTORY_START_HERE.md"
+echo
+echo "  3. Read the plan and its assumptions, then reply:"
+echo
+echo "       Approved. Implement Phase 1 only."
