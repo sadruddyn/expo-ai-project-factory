@@ -1,8 +1,11 @@
 # Expo Project Factory — personal defaults
 
 The factory skill reads this file at the start of every project, so you only
-state these choices once. Edit any line. Leave a line as `not decided` to let
-the agent propose something and list it as an assumption in the plan.
+state these choices once. You do not have to edit it by hand: a line left as
+`not decided` is proposed by the agent, and after you approve a plan the agent
+offers to save the approved choices here. You can also tell the agent "from now
+on use X" and it updates the matching line. Every line is yours to change,
+including the engineering preferences below.
 
 A project brief always wins over this file: if a brief says "web only" or
 "use Supabase", that project uses what the brief says.

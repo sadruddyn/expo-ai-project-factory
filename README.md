@@ -17,13 +17,15 @@ The factory skill is the orchestrator. Official Expo skills remain the source of
 ```bash
 git clone https://github.com/sadruddyn/expo-ai-project-factory.git
 cd expo-ai-project-factory
-./scripts/install.sh        # links the skill, creates your defaults file
+./scripts/install.sh        # links the skill, asks one question about your usual backend
 ./scripts/new-project.sh    # asks for a project name and a brief
 ```
 
-Edit `~/.config/expo-project-factory/defaults.md` once with your usual stack. After that, each new project needs only a name and a brief: the agent takes everything else from your defaults, lists what it assumed, and waits for your approval before writing code.
+You also need the official Expo plugin in your agent (section 4).
 
-You also need the official Expo plugin in your agent (section 4). The sections below explain each step.
+Each new project needs only a name and a brief. The agent proposes the rest, lists what it assumed, and waits for your approval before writing code. There is no configuration file to fill in: after you approve your first plan, the agent offers to remember that stack, and later projects reuse it.
+
+The sections below explain each step.
 
 ## 1. Prerequisites
 
@@ -31,7 +33,6 @@ You also need the official Expo plugin in your agent (section 4). The sections b
 - Git
 - Node.js + npm
 - Codex CLI and/or Claude Code CLI
-- GitHub CLI (`gh`) is optional, only needed to create/push the GitHub repository from Terminal
 
 ## 2. Get the repository
 
@@ -55,9 +56,18 @@ The installer creates symlinks:
 
 Symlinks keep the installed skill synced with this Git repository when you pull updates.
 
-It also creates your personal defaults file at `~/.config/expo-project-factory/defaults.md` from `templates/defaults.md`. Open it once and fill in your usual stack (platforms, backend, database, authentication, libraries you prefer). The skill reads it for every project, so you do not repeat these choices in each brief. Lines left as `not decided` are proposed by the agent and shown as assumptions in the plan.
+It also creates your personal defaults file at `~/.config/expo-project-factory/defaults.md`. The installer asks one question, your usual backend (NestJS + PostgreSQL, Supabase, Firebase, no backend, or decide later), and press ENTER to decide later.
 
-Rerunning the installer is safe: it never overwrites an existing skill path or an existing defaults file.
+You do not need to edit this file. The skill reads it for every project and keeps it up to date with your approval:
+
+- A line that says `not decided` is proposed by the agent and shown as an assumption in the plan.
+- After you approve a plan, the agent offers to save the approved stack as your defaults. It writes the file only if you say yes.
+- To change a default later, tell the agent, for example "from now on use Supabase".
+- To use something different for one project only, say so in that project's brief.
+
+The file starts with a few engineering preferences (for example, avoid unnecessary libraries). They are ordinary lines; change or delete any of them, by hand or by asking the agent.
+
+Rerunning the installer is safe: it never overwrites an existing skill path or an existing defaults file. To be asked the backend question again, delete the defaults file and rerun it.
 
 ## 4. Install the official Expo plugin in each agent
 
@@ -95,26 +105,7 @@ Expected:
 
 The verification script does not claim that a plugin is installed merely because its CLI exists. Confirm the Expo plugin in the agent's plugin UI as well.
 
-## 6. Create and publish your GitHub repository
-
-Create an empty repository on GitHub named `expo-ai-project-factory`, then:
-
-```bash
-git init
-git add .
-git commit -m "chore: bootstrap Expo AI Project Factory"
-git branch -M main
-git remote add origin https://github.com/YOUR_GITHUB_USERNAME/expo-ai-project-factory.git
-git push -u origin main
-```
-
-Or, if GitHub CLI is installed and authenticated:
-
-```bash
-gh repo create expo-ai-project-factory --private --source=. --remote=origin --push
-```
-
-## 7. Use it for a new project
+## 6. Use it for a new project
 
 Run the intake script:
 
@@ -146,7 +137,7 @@ Prepare the plan and wait for my approval.
 
 To override a default for one project, say so in the brief (for example, "Backend: Supabase" or "Web only").
 
-The plan ends with an "Assumptions" list showing every choice the agent made for you and where it came from. Correct anything there before approving.
+The plan ends with an "Assumptions" list showing every choice the agent made for you and where it came from. Correct anything there before approving. Once you approve, the agent offers to save the stack choices as your defaults, so the next project starts from them.
 
 After reviewing the plan, reply:
 
@@ -154,7 +145,7 @@ After reviewing the plan, reply:
 Approved. Implement Phase 1 only. Show changed files and verification results.
 ```
 
-## 8. Updating
+## 7. Updating
 
 Update the factory:
 
