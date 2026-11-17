@@ -61,23 +61,25 @@ if [ -e "$DEFAULTS_FILE" ] || [ -L "$DEFAULTS_FILE" ]; then
 else
   echo
   echo "Which backend do you usually build on? (sets your defaults; you can change it later)"
-  echo "  1) NestJS + PostgreSQL"
-  echo "  2) Supabase"
-  echo "  3) Firebase"
-  echo "  4) No backend (data stays on the device)"
-  echo "  5) Decide later - the agent proposes one on your first project"
+  echo "  1) Node.js with NestJS + PostgreSQL"
+  echo "  2) Node.js with Express"
+  echo "  3) Supabase"
+  echo "  4) Firebase"
+  echo "  5) No backend (data stays on the device)"
+  echo "  6) Decide later - the agent proposes one on your first project"
   CHOICE=""
-  read -r -p "Choose 1-5 [5]: " CHOICE || true
+  read -r -p "Choose 1-6 [6]: " CHOICE || true
 
   BACKEND="not decided"
   DATABASE="not decided"
   AUTH="not decided"
   case "$CHOICE" in
     1) BACKEND="NestJS REST API"; DATABASE="PostgreSQL"; AUTH="JWT issued by the API" ;;
-    2) BACKEND="Supabase"; DATABASE="Supabase Postgres"; AUTH="Supabase Auth" ;;
-    3) BACKEND="Firebase"; DATABASE="Cloud Firestore"; AUTH="Firebase Authentication" ;;
-    4) BACKEND="none (data stays on the device)"; DATABASE="on-device SQLite (expo-sqlite)"; AUTH="none" ;;
-    ""|5) ;;
+    2) BACKEND="Node.js REST API (Express)"; AUTH="JWT issued by the API" ;;
+    3) BACKEND="Supabase"; DATABASE="Supabase Postgres"; AUTH="Supabase Auth" ;;
+    4) BACKEND="Firebase"; DATABASE="Cloud Firestore"; AUTH="Firebase Authentication" ;;
+    5) BACKEND="none (data stays on the device)"; DATABASE="on-device SQLite (expo-sqlite)"; AUTH="none" ;;
+    ""|6) ;;
     *) echo "Unrecognised choice '$CHOICE'; leaving the backend undecided." ;;
   esac
 

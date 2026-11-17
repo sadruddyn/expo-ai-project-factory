@@ -96,10 +96,12 @@ check_choice() {
   fi
 }
 check_choice 1 1 "NestJS REST API" "PostgreSQL" "JWT issued by the API"
-check_choice 2 2 "Supabase" "Supabase Postgres" "Supabase Auth"
-check_choice 3 3 "Firebase" "Cloud Firestore" "Firebase Authentication"
-check_choice 4 4 "none (data stays on the device)" "on-device SQLite (expo-sqlite)" "none"
-check_choice 5 5 "not decided" "not decided" "not decided"
+check_choice 2 2 "Node.js REST API (Express)" "not decided" "JWT issued by the API"
+check_choice 3 3 "Supabase" "Supabase Postgres" "Supabase Auth"
+check_choice 4 4 "Firebase" "Cloud Firestore" "Firebase Authentication"
+check_choice 5 5 "none (data stays on the device)" "on-device SQLite (expo-sqlite)" "none"
+check_choice 6 6 "not decided" "not decided" "not decided"
+check_choice out-of-range 7 "not decided" "not decided" "not decided"
 check_choice unrecognised abc "not decided" "not decided" "not decided"
 check_choice no-input NONE "not decided" "not decided" "not decided"
 
