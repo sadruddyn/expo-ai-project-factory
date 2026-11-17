@@ -29,6 +29,7 @@ Do not use new-project defaults to restructure an existing project.
 4. For an existing app, inspect at least `package.json`, app config, Expo SDK version, router setup, TypeScript config, current folder conventions, and relevant native/config-plugin files when present.
 5. Never assume the latest Expo SDK is compatible with the user's existing dependency set. Check the actual project version and current official docs.
 6. Read the project's own agent instruction files (`AGENTS.md`, `CLAUDE.md`) when present, and follow them. If one points at version-pinned Expo documentation, for example `https://docs.expo.dev/versions/v57.0.0/`, read the pages relevant to this task for that version before writing the plan, and base every version-specific statement on them, not on memory. Say in the plan which pages you read.
+7. Check the toolchain against what the SDK requires, starting with `node --version`. If the active Node is too old, look for a suitable version already installed (nvm, fnm, volta) and plan to run every project command under it without changing the user's global default; if there is none, tell the user what to install. Check Xcode and the Android SDK when the plan includes native builds.
 
 ### Filling the gaps in a short brief
 
@@ -56,13 +57,17 @@ List every design choice the user did not state in the Assumptions. Tell the use
 
 The built-in design default (native look, system fonts, one accent colour) is the starting point when the product gives no cue; go beyond it where the product clearly calls for something else, and list that as `proposed`.
 
-For a new app, plan a **design checkpoint**: Phase 1 scaffolds the app and builds only the two or three defining screens, with the real theme and realistic sample data, so the user's first approval produces something they can look at. Show them (screenshots when you can run the app, otherwise the exact command to run it) and wait for the user to confirm or correct the look before building the remaining screens. Skip the checkpoint when the user supplied a complete design.
+For a new app, plan a **design checkpoint**: Phase 1 scaffolds the app and builds only the two or three defining screens, with the real theme and realistic sample data, so the user's first approval produces something they can look at. Show them and wait for the user to confirm or correct the look before building the remaining screens. Skip the checkpoint when the user supplied a complete design.
+
+Checkpoint screens run on sample data, so be honest in the UI: a control either works on the sample data or is visibly disabled, and each screen carries a short note that it is a preview and which phase makes it real.
+
+To show the screens, run the app and capture screenshots into a `design-checkpoint/` folder in the project. Use Expo Go on a simulator when the phase needs no native build. If a state can only be reached by a tap you cannot perform, you may change the initial state temporarily to capture it, then revert it, and say that you did. If you cannot capture screenshots, say what you tried and give the exact command that shows the screens. Stop every server you started, and tell the user anything you left behind, such as an app installed on their simulator.
 
 ### Remembering the user's stack
 
 The defaults file fills itself in from what the user approves, so they never have to edit it by hand.
 
-**After a plan is approved.** If the approved plan settled any reusable stack decision that the defaults file does not already record (the file is missing, the line says `not decided`, or the user corrected your proposal), offer once, in the same reply that starts the approved phase:
+**After a plan is approved.** Read the defaults file first if you have not read it in this session. If the approved plan settled any reusable stack decision that the defaults file does not already record (the file is missing, the line says `not decided`, or the user corrected your proposal), offer once, in the same reply that starts the approved phase:
 
 > Save these as your defaults for future projects?
 > - Backend / API: …
@@ -162,12 +167,12 @@ Return a concise plan with:
 3. Expo SDK and React Native version assumptions, clearly labelled if not yet verified.
 4. Relevant skills selected and missing skills.
 5. Proposed architecture and folder structure.
-6. Navigation and screen/module breakdown.
+6. Navigation and screen/module breakdown. Name the screen the app opens on, and check that exactly one route maps to `/`.
 7. Design direction: the feel, colour, light and dark mode, typography, the defining screens, and which reference (if any) it is based on.
 8. State management and data-fetching strategy.
 9. Storage and authentication strategy, if applicable.
 10. Native capabilities and config plugins, if applicable.
-11. Proposed dependencies, with a reason for each and whether it was checked; avoid unnecessary libraries.
+11. Proposed dependencies, with a reason for each, the phase that adds it, and whether it was checked; avoid unnecessary libraries.
 12. Security, privacy, accessibility, and performance considerations.
 13. Implementation phases.
 14. Exact verification commands and expected outcomes.
@@ -189,6 +194,14 @@ For an existing project, preserve its current conventions unless there is a conc
 - After approval, implement one logical phase at a time and report changed files and checks.
 - If the user asks only for analysis, stop after the plan.
 
+### Scaffolding a new app
+
+- Create the app with `npx create-expo-app@latest`. It refuses a folder that already has files, and the workspace holds the two intake files. Scaffold into a subfolder named exactly as the project should be named (the folder name becomes the app name, slug and URL scheme), move everything up one level including hidden entries such as `.git` and `.gitignore`, and remove the empty subfolder. Keep the intake files.
+- `create-expo-app` initialises a git repository and makes an initial commit. Tell the user. Make no further commits unless they ask.
+- Read the generated `AGENTS.md`. To find a documentation page for the SDK it names, take the path from `https://docs.expo.dev/llms.txt`; do not guess URLs.
+- The template ships demo screens, demo components, demo assets, its own theme file and a reset script. Replace them with the app's own; a fresh scaffold's files are not conventions to preserve. Leave the template's unused packages and its web support in place unless the plan or the user has decided otherwise, and list them in your report.
+- When an Expo skill's text disagrees with the versioned documentation or with the installed package's types, the documentation and the types win. Mention each case in your report.
+
 ### Phase 5 — Implementation and verification
 
 After approval:
@@ -198,7 +211,7 @@ After approval:
 3. Keep TypeScript strict; avoid `any` and empty catch blocks.
 4. Avoid unnecessary dependencies and abstractions.
 5. Explain native changes, config plugins, permissions, and rebuild requirements.
-6. Run the checks actually available in the project: typecheck, lint, tests, Expo diagnostics, and platform builds when feasible.
+6. Run the checks actually available in the project: typecheck, lint, tests, Expo diagnostics, and platform builds when feasible. Two known surprises: the first `npx expo lint` installs ESLint and writes a config file, and can fail on that first run, so run it again and report the added dev dependencies; `npx expo-doctor` compares against the newest patch releases, so a version-mismatch failure is fixed with `npx expo install --fix`.
 7. Never claim a check passed unless it was run and its output supports that claim.
 8. Report blockers, unrun checks, changed files, and next steps.
 
