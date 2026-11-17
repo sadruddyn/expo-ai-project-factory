@@ -266,7 +266,7 @@ The factory skill only orchestrates. Expo-specific guidance comes from the offic
 
 ## Good to know
 
-- Tested on macOS with Claude Code. The scripts are written for Linux as well, and the skill for Codex, but neither has been tested yet.
+- The scripts are tested on macOS and Linux for every change. The skill has been tried with Claude Code; it is written for Codex as well, but that has not been tested yet.
 - The skill is guidance for the agent, not enforcement. Keep approval controls enabled in your agent.
 - Do not let the agent install packages, change native files, run destructive commands, or create credentials without your approval.
 - Expo documentation, Expo CLI, and EAS CLI are the source of truth. The skill is supporting guidance.
