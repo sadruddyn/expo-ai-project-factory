@@ -28,6 +28,7 @@ Do not use new-project defaults to restructure an existing project.
 3. Inspect the current directory and existing project files before proposing changes.
 4. For an existing app, inspect at least `package.json`, app config, Expo SDK version, router setup, TypeScript config, current folder conventions, and relevant native/config-plugin files when present.
 5. Never assume the latest Expo SDK is compatible with the user's existing dependency set. Check the actual project version and current official docs.
+6. Read the project's own agent instruction files (`AGENTS.md`, `CLAUDE.md`) when present, and follow them. If one points at version-pinned Expo documentation, for example `https://docs.expo.dev/versions/v57.0.0/`, read the pages relevant to this task for that version before writing the plan, and base every version-specific statement on them, not on memory. Say in the plan which pages you read.
 
 ### Filling the gaps in a short brief
 
@@ -139,7 +140,7 @@ For an existing project, preserve its current conventions unless there is a conc
 
 After approval:
 
-1. Re-check relevant official Expo documentation and package compatibility.
+1. Re-check relevant official Expo documentation and package compatibility. Scaffolding a new Expo app can create an `AGENTS.md` that names the exact SDK documentation to use; read it straight after scaffolding and follow it in every later phase.
 2. Use `expo install` for Expo-compatible packages where appropriate, run through the package manager the project or the defaults file specifies (`npx expo install` when none is specified).
 3. Keep TypeScript strict; avoid `any` and empty catch blocks.
 4. Avoid unnecessary dependencies and abstractions.

@@ -240,12 +240,25 @@ Then delete this repository folder. Projects you created are not affected.
 </details>
 
 <details>
+<summary><b>Run the tests</b></summary>
+
+```bash
+bash tests/run.sh          # install, verify and new-project with piped input
+python3 tests/terminal.py  # new-project typed into a terminal, with fake agents
+```
+
+Both use throwaway home directories and never start a real agent. GitHub Actions runs them on macOS and Linux for every pull request.
+
+</details>
+
+<details>
 <summary><b>What is in this repository</b></summary>
 
 - `factory/SKILL.md`: the skill, the instructions the agent follows.
 - `scripts/install.sh`, `scripts/verify.sh`, `scripts/new-project.sh`: the three commands above.
 - `templates/defaults.md`: the starting defaults file.
 - `templates/project-brief.md`, `templates/approval-prompt.md`: optional longer brief and ready-made approval messages.
+- `tests/`: the script tests that CI runs.
 
 The factory skill only orchestrates. Expo-specific guidance comes from the official Expo skills and documentation.
 
@@ -253,7 +266,7 @@ The factory skill only orchestrates. Expo-specific guidance comes from the offic
 
 ## Good to know
 
-- Tested on macOS with Claude Code. The scripts are written for Linux as well, and the skill for Codex, but neither has been tested yet.
+- The scripts are tested on macOS and Linux for every change. The skill has been tried with Claude Code; it is written for Codex as well, but that has not been tested yet.
 - The skill is guidance for the agent, not enforcement. Keep approval controls enabled in your agent.
 - Do not let the agent install packages, change native files, run destructive commands, or create credentials without your approval.
 - Expo documentation, Expo CLI, and EAS CLI are the source of truth. The skill is supporting guidance.
