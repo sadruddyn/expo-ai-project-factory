@@ -13,12 +13,23 @@ You need macOS or Linux, Git, and Claude Code or Codex.
 **1. Install (once)**
 
 ```bash
+curl -fsSL https://raw.githubusercontent.com/sadruddyn/expo-ai-project-factory/main/bootstrap.sh | bash
+```
+
+This downloads the factory to `~/.expo-project-factory`, links the skill into your agents, and adds an `expo-factory` command. It asks one question, your usual backend. Press ENTER to decide later.
+
+<details>
+<summary>Prefer not to pipe a script into your shell?</summary>
+
+Clone it wherever you like and run the installer yourself. The result is the same.
+
+```bash
 git clone https://github.com/sadruddyn/expo-ai-project-factory.git
 cd expo-ai-project-factory
 ./scripts/install.sh
 ```
 
-The installer asks one question, your usual backend. Press ENTER to decide later.
+</details>
 
 **2. Add the official Expo plugin to your agent (once)**
 
@@ -29,13 +40,13 @@ codex plugin add expo@openai-curated                 # Codex
 
 Restart the agent afterwards.
 
-**3. Start a project (every time)**
+**3. Start a project (every time, from any folder)**
 
 ```bash
-./scripts/new-project.sh
+expo-factory new
 ```
 
-Type a project name, then describe the app and press ENTER. The script creates the project folder and offers to open your agent with the first message already sent.
+Type a project name, then describe the app and press ENTER. The command creates the project folder and offers to open your agent with the first message already sent. The first time, it also asks where your projects should live, and remembers the answer.
 
 That is all. There is no configuration file to fill in.
 
@@ -44,7 +55,7 @@ That is all. There is no configuration file to fill in.
 ### You give a name and a brief
 
 ```text
-$ ./scripts/new-project.sh
+$ expo-factory new
 
 Project name: Salon Booking
 
@@ -165,7 +176,7 @@ Prepare the plan and wait for my approval.
 ```
 
 **Where does my project folder go?**
-`~/Development/<project-name>`. Pass a different parent folder as an argument: `./scripts/new-project.sh ~/Projects/Clients`.
+In the projects folder you chose the first time you ran `expo-factory new`, as `<projects-folder>/<project-name>`. Change it with `expo-factory projects-dir ~/Projects`, or use a different folder for one project with `expo-factory new ~/Projects/Clients`.
 
 **Will it use outdated or deprecated libraries?**
 The skill tells the agent not to trust its memory: for each dependency it reads the Expo documentation for your SDK version and checks the package registry, rejects deprecated packages, and marks every dependency in the plan as `checked` or `unverified`. If it cannot reach the documentation, it has to say so.
@@ -184,15 +195,18 @@ The factory is free. You pay for your agent as usual. The skill is told not to a
 <details>
 <summary><b>What the installer changes on your machine</b></summary>
 
-`./scripts/install.sh` creates:
+The one-line installer (`bootstrap.sh`) clones this repository to `~/.expo-project-factory`, or updates it if it is already there, and then runs `scripts/install.sh`, which creates:
 
-- `~/.claude/skills/expo-project-factory`, a symlink to this repository's `factory/` folder, for Claude Code.
+- `~/.claude/skills/expo-project-factory`, a symlink to the repository's `factory/` folder, for Claude Code.
 - `~/.agents/skills/expo-project-factory`, the same symlink for Codex.
+- `~/.local/bin/expo-factory`, a symlink to the repository's `bin/expo-factory`, the command.
 - `~/.config/expo-project-factory/defaults.md`, your personal defaults, copied from `templates/defaults.md`.
 
-It never overwrites anything. If a skill path already exists and is not this symlink, it stops before changing anything. An existing defaults file is kept and the backend question is skipped.
+`expo-factory new` later adds `~/.config/expo-project-factory/projects-dir`, the folder you chose for projects.
 
-Because the skill is a symlink, `git pull` in this repository updates it.
+Nothing is ever overwritten. If one of the three link paths already exists and is not this link, the installer stops before changing anything. An existing defaults file is kept and the backend question is skipped.
+
+Because these are symlinks, updating the repository updates the skill and the command.
 
 </details>
 
@@ -204,7 +218,7 @@ Because the skill is a symlink, `git pull` in this repository updates it.
 - A line that says `not decided` is proposed by the agent for each project.
 - The agent writes to this file only after you say yes, and only the lines you agreed to.
 - Every line is yours to change or delete, by hand or by asking the agent.
-- To be asked the installer's backend question again, delete the file and rerun `./scripts/install.sh`.
+- To be asked the installer's backend question again, delete the file and run the installer again.
 
 </details>
 
@@ -212,10 +226,10 @@ Because the skill is a symlink, `git pull` in this repository updates it.
 <summary><b>Check the installation</b></summary>
 
 ```bash
-./scripts/verify.sh
+expo-factory verify
 ```
 
-It reports whether both skill links exist and point at this repository, whether the skill metadata is readable, and whether your defaults file exists. It cannot see inside your agent, so confirm the Expo plugin there: `/plugin` in Claude Code, `/plugins` in Codex.
+It reports whether both skill links exist and point at this repository, whether the skill metadata is readable, whether the `expo-factory` command is linked, and whether your defaults file exists. It cannot see inside your agent, so confirm the Expo plugin there: `/plugin` in Claude Code, `/plugins` in Codex.
 
 </details>
 
@@ -223,12 +237,10 @@ It reports whether both skill links exist and point at this repository, whether 
 <summary><b>Update</b></summary>
 
 ```bash
-cd expo-ai-project-factory
-git pull
-./scripts/verify.sh
+expo-factory update
 ```
 
-Update the Expo plugin from your agent's plugin marketplace.
+It pulls the latest version and checks the installation. Update the Expo plugin from your agent's plugin marketplace.
 
 </details>
 
@@ -236,16 +248,19 @@ Update the Expo plugin from your agent's plugin marketplace.
 <summary><b>Uninstall</b></summary>
 
 ```bash
-rm ~/.claude/skills/expo-project-factory ~/.agents/skills/expo-project-factory
+rm ~/.claude/skills/expo-project-factory ~/.agents/skills/expo-project-factory ~/.local/bin/expo-factory
 rm -r ~/.config/expo-project-factory
+rm -rf ~/.expo-project-factory
 ```
 
-Then delete this repository folder. Projects you created are not affected.
+If you cloned the repository yourself, delete that folder in place of the last line. Projects you created are not affected.
 
 </details>
 
 <details>
 <summary><b>Troubleshooting</b></summary>
+
+**`expo-factory: command not found`:** `~/.local/bin` is not on your `PATH`. Add it (`echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc`, or `~/.bashrc` for bash) and open a new terminal. Until then, `~/.local/bin/expo-factory new` works.
 
 **"Refusing to overwrite existing path"** during install: something else already exists at one of the skill paths, often a link to an older copy of this repository in another folder. Remove that path and rerun the installer.
 
@@ -263,8 +278,8 @@ Then delete this repository folder. Projects you created are not affected.
 <summary><b>Run the tests</b></summary>
 
 ```bash
-bash tests/run.sh          # install, verify and new-project with piped input
-python3 tests/terminal.py  # new-project typed into a terminal, with fake agents
+bash tests/run.sh          # installer, command, one-line installer, new-project with piped input
+python3 tests/terminal.py  # new-project and the command typed into a terminal, with fake agents
 ```
 
 Both use throwaway home directories and never start a real agent. GitHub Actions runs them on macOS and Linux for every pull request.
@@ -275,7 +290,9 @@ Both use throwaway home directories and never start a real agent. GitHub Actions
 <summary><b>What is in this repository</b></summary>
 
 - `factory/SKILL.md`: the skill, the instructions the agent follows.
-- `scripts/install.sh`, `scripts/verify.sh`, `scripts/new-project.sh`: the three commands above.
+- `bootstrap.sh`: the one-line installer.
+- `bin/expo-factory`: the command, a thin wrapper around the scripts.
+- `scripts/install.sh`, `scripts/verify.sh`, `scripts/new-project.sh`: what the command runs. They also work directly from a clone.
 - `templates/defaults.md`: the starting defaults file.
 - `templates/project-brief.md`, `templates/approval-prompt.md`: optional longer brief and ready-made approval messages.
 - `tests/`: the script tests that CI runs.

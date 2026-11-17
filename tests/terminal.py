@@ -31,12 +31,13 @@ def check(label, condition, detail=""):
 class Session:
     """One run of new-project.sh on a pseudo-terminal."""
 
-    def __init__(self, base, agents):
-        self.home = os.path.join(base, "home")
+    def __init__(self, base, agents, argv=("scripts/new-project.sh",), home=None):
+        self.base = base
+        self.home = home or os.path.join(base, "home")
         self.bindir = os.path.join(base, "bin")
         self.log = os.path.join(base, "launch.log")
-        for directory in (self.home, self.bindir):
-            os.makedirs(directory)
+        os.makedirs(self.home, exist_ok=True)
+        os.makedirs(self.bindir)
         for name in agents:
             path = os.path.join(self.bindir, name)
             with open(path, "w") as handle:
@@ -52,7 +53,7 @@ class Session:
             # codex installed on this machine is never found or started.
             os.environ["PATH"] = self.bindir + ":/usr/bin:/bin"
             os.chdir(ROOT)
-            os.execv("/bin/bash", ["/bin/bash", "scripts/new-project.sh"])
+            os.execv("/bin/bash", ["/bin/bash", *argv])
 
     def _read(self, timeout):
         ready, _, _ = select.select([self.fd], [], [], timeout)
@@ -122,8 +123,9 @@ class Session:
         return os.path.realpath(os.path.join(self.home, "Development", slug))
 
 
-def start(agents=()):
-    return Session(tempfile.mkdtemp(prefix="factory-test-"), agents)
+def start(agents=(), argv=("scripts/new-project.sh",), home=None):
+    """Start a run. Pass `home` to reuse the HOME of an earlier run."""
+    return Session(tempfile.mkdtemp(prefix="factory-test-"), agents, argv, home)
 
 
 def enter_project(session, name="Demo App", brief="A small demo app.\n"):
@@ -135,7 +137,7 @@ def enter_project(session, name="Demo App", brief="A small demo app.\n"):
 
 
 def cleanup(session):
-    shutil.rmtree(os.path.dirname(session.home), ignore_errors=True)
+    shutil.rmtree(session.base, ignore_errors=True)
 
 
 # ---- entering the brief ----------------------------------------------------
@@ -242,6 +244,40 @@ s.send("y\n")
 check("no agent installed: exits 0", s.finish() == 0, s.exit_code)
 check("no agent installed: no question", " now? " not in s.output and "now? (Y/n)" not in s.output)
 check("no agent installed: next steps printed", "Follow FACTORY_START_HERE.md" in s.output)
+cleanup(s)
+
+# ---- the expo-factory command ------------------------------------------------
+
+s = start(argv=("bin/expo-factory", "new"))
+asked = s.expect("Projects folder [")
+check("expo-factory new: asks once where projects go", asked, s.output[-200:])
+s.send("~/My Apps\n")
+reached = enter_project(s)
+check("expo-factory new: continues to the brief", reached, s.output[-200:])
+s.send("y\n")
+check("expo-factory new: exits 0", s.finish() == 0, s.exit_code)
+project = os.path.join(s.home, "My Apps", "demo-app", "PROJECT_BRIEF.md")
+check("expo-factory new: project created in the chosen folder", os.path.exists(project))
+saved = os.path.join(s.home, ".config", "expo-project-factory", "projects-dir")
+check("expo-factory new: folder saved", os.path.exists(saved) and open(saved).read().strip() == os.path.join(s.home, "My Apps"))
+
+# Second run in the same HOME: the question must not come back.
+s2 = start(argv=("bin/expo-factory", "new"), home=s.home)
+reached = enter_project(s2, name="Second App")
+s2.send("y\n")
+s2.finish()
+check("expo-factory new: second run does not ask again", reached and "Projects folder [" not in s2.output, s2.output[:200])
+check("expo-factory new: second project in the saved folder", os.path.exists(os.path.join(s2.home, "My Apps", "second-app", "PROJECT_BRIEF.md")))
+cleanup(s2)
+cleanup(s)
+
+s = start(argv=("bin/expo-factory", "new"))
+s.expect("Projects folder [")
+s.send("\n")
+enter_project(s)
+s.send("y\n")
+s.finish()
+check("expo-factory new: ENTER keeps ~/Development", os.path.exists(os.path.join(s.home, "Development", "demo-app", "PROJECT_BRIEF.md")))
 cleanup(s)
 
 print()

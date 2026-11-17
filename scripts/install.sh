@@ -6,6 +6,9 @@ SKILL_SOURCE="$ROOT/factory"
 CODEX_SKILLS="$HOME/.agents/skills"
 CLAUDE_SKILLS="$HOME/.claude/skills"
 CONFIG_DIR="$HOME/.config/expo-project-factory"
+BIN_DIR="$HOME/.local/bin"
+COMMAND_SOURCE="$ROOT/bin/expo-factory"
+COMMAND_LINK="$BIN_DIR/expo-factory"
 DEFAULTS_FILE="$CONFIG_DIR/defaults.md"
 
 is_linked() {
@@ -44,11 +47,13 @@ link_skill() {
 
 check_free "$SKILL_SOURCE" "$CODEX_SKILLS/expo-project-factory"
 check_free "$SKILL_SOURCE" "$CLAUDE_SKILLS/expo-project-factory"
+check_free "$COMMAND_SOURCE" "$COMMAND_LINK"
 
-mkdir -p "$CODEX_SKILLS" "$CLAUDE_SKILLS"
+mkdir -p "$CODEX_SKILLS" "$CLAUDE_SKILLS" "$BIN_DIR"
 
 link_skill "$SKILL_SOURCE" "$CODEX_SKILLS/expo-project-factory"
 link_skill "$SKILL_SOURCE" "$CLAUDE_SKILLS/expo-project-factory"
+link_skill "$COMMAND_SOURCE" "$COMMAND_LINK"
 
 # Personal defaults are copied, not linked, so your edits stay out of this repo.
 if [ -e "$DEFAULTS_FILE" ] || [ -L "$DEFAULTS_FILE" ]; then
@@ -89,7 +94,18 @@ echo
 echo "Factory skill linked for Codex and Claude Code."
 echo "Next:"
 echo "  1. Install the official Expo plugin in each agent and restart the sessions."
-echo "  2. Start a project with ./scripts/new-project.sh"
+case ":$PATH:" in
+  *":$BIN_DIR:"*)
+    echo "  2. Start a project from any folder with: expo-factory new"
+    ;;
+  *)
+    echo "  2. Add $BIN_DIR to your PATH so the expo-factory command is found."
+    echo "     For zsh:  echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> ~/.zshrc"
+    echo "     For bash: echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> ~/.bashrc"
+    echo "     Then open a new terminal and run: expo-factory new"
+    echo "     Until then this works: $COMMAND_LINK new"
+    ;;
+esac
 echo
 echo "You do not need to edit the defaults file. After you approve your first plan,"
 echo "the agent offers to save that stack for future projects:"

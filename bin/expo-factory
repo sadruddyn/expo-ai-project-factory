@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# expo-factory: run the Expo AI Project Factory from any folder.
+# The installer links this file into ~/.local/bin.
+
+# Resolve this file's real location through any symlinks.
+SOURCE="${BASH_SOURCE[0]}"
+while [ -L "$SOURCE" ]; do
+  DIR="$(cd "$(dirname "$SOURCE")" && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  case "$SOURCE" in
+    /*) ;;
+    *) SOURCE="$DIR/$SOURCE" ;;
+  esac
+done
+ROOT="$(cd "$(dirname "$SOURCE")/.." && pwd)"
+
+CONFIG_DIR="$HOME/.config/expo-project-factory"
+PROJECTS_DIR_FILE="$CONFIG_DIR/projects-dir"
+DEFAULT_PROJECTS_DIR="$HOME/Development"
+
+usage() {
+  cat <<EOF
+Usage: expo-factory <command>
+
+  new [folder]          Start a project: asks for a name and a brief.
+                        Projects go in your saved projects folder, or in
+                        [folder] for this one run.
+  projects-dir [path]   Show or change where new projects are created.
+  update                Get the latest version of the factory.
+  verify                Check the installation.
+  help                  Show this message.
+
+Installed at: $ROOT
+EOF
+}
+
+expand_tilde() {
+  case "$1" in
+    "~") printf '%s' "$HOME" ;;
+    "~/"*) printf '%s/%s' "$HOME" "${1#\~/}" ;;
+    *) printf '%s' "$1" ;;
+  esac
+}
+
+saved_projects_dir() {
+  if [ -f "$PROJECTS_DIR_FILE" ]; then
+    head -n 1 "$PROJECTS_DIR_FILE"
+  fi
+}
+
+save_projects_dir() {
+  mkdir -p "$CONFIG_DIR"
+  printf '%s\n' "$1" > "$PROJECTS_DIR_FILE"
+}
+
+cmd_new() {
+  local parent=""
+  if [ "$#" -ge 1 ]; then
+    parent="$(expand_tilde "$1")"
+  else
+    parent="$(saved_projects_dir)"
+    if [ -z "$parent" ]; then
+      parent="$DEFAULT_PROJECTS_DIR"
+      # Ask once, in a real terminal only; scripted runs use the default.
+      if [ -t 0 ] && [ -t 1 ]; then
+        local answer=""
+        echo "Where should new projects be created? This is asked once."
+        read -r -p "Projects folder [$DEFAULT_PROJECTS_DIR]: " answer || true
+        if [ -n "$answer" ]; then
+          parent="$(expand_tilde "$answer")"
+        fi
+        save_projects_dir "$parent"
+        echo "Saved. Change it later with: expo-factory projects-dir <path>"
+      fi
+    fi
+  fi
+  exec "$ROOT/scripts/new-project.sh" "$parent"
+}
+
+cmd_projects_dir() {
+  if [ "$#" -ge 1 ]; then
+    local dir
+    dir="$(expand_tilde "$1")"
+    save_projects_dir "$dir"
+    echo "New projects will be created in: $dir"
+  else
+    local dir
+    dir="$(saved_projects_dir)"
+    if [ -n "$dir" ]; then
+      echo "$dir"
+    else
+      echo "$DEFAULT_PROJECTS_DIR (default; not saved yet)"
+    fi
+  fi
+}
+
+cmd_update() {
+  if [ ! -d "$ROOT/.git" ]; then
+    echo "Cannot update: $ROOT is not a git clone."
+    exit 1
+  fi
+  git -C "$ROOT" pull --ff-only
+  "$ROOT/scripts/verify.sh"
+}
+
+COMMAND="${1:-help}"
+[ "$#" -gt 0 ] && shift
+
+case "$COMMAND" in
+  new) cmd_new "$@" ;;
+  projects-dir) cmd_projects_dir "$@" ;;
+  update) cmd_update ;;
+  verify) exec "$ROOT/scripts/verify.sh" ;;
+  help|-h|--help) usage ;;
+  *)
+    echo "Unknown command: $COMMAND"
+    echo
+    usage
+    exit 2
+    ;;
+esac
