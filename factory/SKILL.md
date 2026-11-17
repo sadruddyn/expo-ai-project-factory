@@ -93,6 +93,43 @@ This is the only file outside the project that this skill may write, and only wi
 4. Read the full `SKILL.md` of each selected skill before making implementation decisions.
 5. If a required skill is missing, say so and continue using current official Expo documentation as the source of truth. Do not fabricate skill contents.
 6. Never force all skills into every project.
+7. If no Expo skill at all is installed, the official Expo plugin is missing. Tell the user once, with the install command for their agent (`claude plugin install expo@claude-plugins-official` for Claude Code, `codex plugin add expo@openai-curated` for Codex), and continue with the official documentation.
+8. If you cannot open the documentation (no web access, or the request fails), or it does not answer the point, do not fall back on memory silently. Mark each affected statement in the plan as `unverified` and say what the user should check.
+
+### Current, supported dependencies
+
+Your knowledge of Expo and React Native libraries may be out of date. Read the documentation you need, not all of it: for each capability the plan uses, and each candidate you rule out, the page for that package in the project's SDK version. For a new app that is the SDK it will be scaffolded with, which `npm view expo dist-tags` shows.
+
+Before proposing any dependency:
+
+1. Prefer a package from the Expo SDK when one covers the need.
+2. Confirm in the versioned documentation that the package exists in that SDK and is not deprecated or removed. If it is, use the replacement the documentation names.
+3. For a third-party package, check the registry (`npm view <package> deprecated version time`) and the package's own documentation. Do not propose a deprecated package. Point out a package whose latest version was published more than roughly two years ago, and one whose documentation does not state New Architecture support, and look for a maintained alternative first.
+4. Confirm it works in an Expo project, and whether it needs a development build.
+
+In the plan's dependency section, mark each dependency, including required peer dependencies, `checked` (say where: versioned Expo page, registry, the package's documentation) or `unverified`. Use `unverified` for anything the sources did not answer, such as compatibility with the exact React Native version, and say when it will be settled, usually the first build. Never present a dependency chosen from memory alone as checked. List the candidates you rejected and why.
+
+In an existing project, report deprecated packages you find, with their replacements. Do not replace them unless the user asks; that is its own phase.
+
+### When Expo does not cover it
+
+Some features have no Expo SDK package. For each such feature separately, work down this list and stop at the first that fits, and say in the native capabilities section which step each feature reached:
+
+1. An Expo SDK package.
+2. A maintained community library that works with development builds, ideally with a config plugin.
+3. Custom native code inside the Expo app: an Expo module written in Swift and Kotlin (load `expo-module`), or a config plugin when only native project settings need changing.
+
+When you reach step 3, give the user the idea in the plan, not the code:
+
+- what the native piece does, and the few functions or views it exposes to JavaScript;
+- which platform APIs it uses, for example a named Apple framework, and whether the other platform has an equivalent, a different approach, or nothing;
+- what it costs: a development build is required, Expo Go no longer runs the app, native changes need a rebuild, Xcode or Android Studio is needed, and the module has to be maintained across SDK upgrades.
+
+At any step, when a feature makes a development build necessary, say so plainly: Expo Go will no longer run the app, and native changes need a rebuild. Give each such feature its own phase, after the screens that use it exist with a placeholder.
+
+Also say when a feature cannot behave the way the brief imagines, even though a package exists for it (for example, something that cannot update while the app is closed), and say what the other platform gets.
+
+Never drop Expo or restructure the project to get one native feature.
 
 ### Skill routing catalogue
 
@@ -130,7 +167,7 @@ Return a concise plan with:
 8. State management and data-fetching strategy.
 9. Storage and authentication strategy, if applicable.
 10. Native capabilities and config plugins, if applicable.
-11. Proposed dependencies, with a reason for each; avoid unnecessary libraries.
+11. Proposed dependencies, with a reason for each and whether it was checked; avoid unnecessary libraries.
 12. Security, privacy, accessibility, and performance considerations.
 13. Implementation phases.
 14. Exact verification commands and expected outcomes.

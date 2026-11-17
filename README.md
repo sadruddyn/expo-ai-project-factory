@@ -167,6 +167,15 @@ Prepare the plan and wait for my approval.
 **Where does my project folder go?**
 `~/Development/<project-name>`. Pass a different parent folder as an argument: `./scripts/new-project.sh ~/Projects/Clients`.
 
+**Will it use outdated or deprecated libraries?**
+The skill tells the agent not to trust its memory: for each dependency it reads the Expo documentation for your SDK version and checks the package registry, rejects deprecated packages, and marks every dependency in the plan as `checked` or `unverified`. If it cannot reach the documentation, it has to say so.
+
+**What if Expo has no package for something I need?**
+The agent works down a list: an Expo SDK package, then a maintained community library, then custom native code inside the Expo app (an Expo module in Swift and Kotlin). For the native route the plan explains what the module would do, which platform APIs it uses, and what it costs you, such as needing a development build in place of Expo Go.
+
+**What if an Expo skill is not installed?**
+The plan lists it as missing and the agent uses the official Expo documentation for that part. If the whole Expo plugin is missing, the agent tells you the command to install it.
+
 **Does it cost anything?**
 The factory is free. You pay for your agent as usual. The skill is told not to add paid services without asking.
 
