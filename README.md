@@ -95,6 +95,17 @@ It ends with the part worth reading first, an **Assumptions** list. A shortened 
 
 It may also ask up to three questions, only about choices that are expensive to change later, such as whether the backend already exists.
 
+### What about the design?
+
+You do not have to describe one. With nothing to go on, the agent proposes a design direction in the plan (the feel, an accent colour, light and dark mode, typography, the screens that define the look) and lists it under Assumptions.
+
+To steer it, do any of these in the brief or in a reply:
+
+- Say it in a sentence: "dark theme, purple accent, a feed like a photo-sharing app".
+- Paste a Figma link, or add screenshots to the project folder.
+
+Before building the whole app, the agent builds only the two or three defining screens and shows them to you. The rest is built in that style once you confirm, so a wrong look costs a few screens and not the whole app.
+
 ### You correct, then approve
 
 Fix anything in one reply ("use phone sign-in, and add a map"), or approve:
@@ -179,7 +190,7 @@ Because the skill is a symlink, `git pull` in this repository updates it.
 <details>
 <summary><b>The defaults file</b></summary>
 
-`~/.config/expo-project-factory/defaults.md` holds your usual stack (platforms, state management, data fetching, styling, backend, database, authentication, storage, testing, package manager) and a few engineering preferences, such as avoiding unnecessary libraries.
+`~/.config/expo-project-factory/defaults.md` holds your usual stack (platforms, state management, data fetching, styling, design direction, backend, database, authentication, storage, testing, package manager) and a few engineering preferences, such as avoiding unnecessary libraries.
 
 - A line that says `not decided` is proposed by the agent for each project.
 - The agent writes to this file only after you say yes, and only the lines you agreed to.
