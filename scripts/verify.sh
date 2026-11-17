@@ -40,6 +40,17 @@ if [ -L "$CLAUDE_LINK" ]; then
     || { echo "FAIL  Claude symlink target"; FAILED=1; }
 fi
 
+COMMAND_LINK="$HOME/.local/bin/expo-factory"
+if [ -x "$COMMAND_LINK" ]; then
+  echo "PASS  expo-factory command: $COMMAND_LINK"
+  case ":$PATH:" in
+    *":$HOME/.local/bin:"*) ;;
+    *) echo "INFO  $HOME/.local/bin is not on your PATH; run the command by its full path or add that folder to PATH." ;;
+  esac
+else
+  echo "INFO  No expo-factory command at $COMMAND_LINK. Run scripts/install.sh to create it."
+fi
+
 DEFAULTS_FILE="$HOME/.config/expo-project-factory/defaults.md"
 if [ -f "$DEFAULTS_FILE" ]; then
   echo "PASS  Personal defaults: $DEFAULTS_FILE"

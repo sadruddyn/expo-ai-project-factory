@@ -23,12 +23,12 @@
     <text x="166.500" y="36" text-anchor="middle" font-size="11" font-weight="700" fill="#7dd3fc">YOU</text>
     <text x="16" y="78" font-size="16" font-weight="700" fill="#f8fafc">Install once</text>
     <rect x="14" y="94" width="177" height="34" rx="6" fill="#0f172a"/>
-    <text x="24" y="116" font-size="12" fill="#a7f3d0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">./scripts/install.sh</text>
+    <text x="24" y="116" font-size="12" fill="#a7f3d0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">curl ... | bash</text>
     <g font-size="13" fill="#cbd5e1">
       <text x="16" y="156">Links the skill into</text>
       <text x="16" y="175">Claude Code and Codex.</text>
-      <text x="16" y="205">Asks one question:</text>
-      <text x="16" y="224">your usual backend.</text>
+      <text x="16" y="205">Adds the expo-factory</text>
+      <text x="16" y="224">command.</text>
     </g>
     <text x="16" y="252" font-size="12" fill="#64748b">No file to edit.</text>
   </g>
@@ -43,7 +43,7 @@
     <text x="16" y="78" font-size="16" font-weight="700" fill="#f8fafc">Name + brief</text>
     <rect x="14" y="94" width="177" height="122" rx="6" fill="#0f172a"/>
     <g font-size="12" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
-      <text x="24" y="116" fill="#a7f3d0">./new-project.sh</text>
+      <text x="24" y="116" fill="#a7f3d0">expo-factory new</text>
       <text x="24" y="140" fill="#94a3b8">Project name:</text>
       <text x="24" y="158" fill="#f8fafc">Salon Booking</text>
       <text x="24" y="182" fill="#94a3b8">&gt; <tspan fill="#f8fafc">Customers book</tspan></text>

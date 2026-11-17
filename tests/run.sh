@@ -41,7 +41,7 @@ new_home() {
 }
 
 echo "== syntax"
-for script in scripts/*.sh tests/*.sh; do
+for script in scripts/*.sh tests/*.sh bin/expo-factory bootstrap.sh; do
   bash -n "$script"
   expect_exit "bash -n $script" 0 $?
 done
@@ -161,6 +161,114 @@ expect_exit "name without letters or digits exits 1" 1 $?
 printf 'Other App\nBrief.\nyes\n' | HOME="$H" ./scripts/new-project.sh "$H/Clients" >/dev/null 2>&1
 expect_exit "custom parent directory" 0 $?
 [ -f "$H/Clients/other-app/PROJECT_BRIEF.md" ] && ok "custom parent holds the workspace" || fail "custom parent holds the workspace"
+
+echo "== expo-factory command"
+H="$(new_home command)"
+printf '\n' | HOME="$H" ./scripts/install.sh >/dev/null 2>&1
+CMD="$H/.local/bin/expo-factory"
+if [ -L "$CMD" ] && [ "$(readlink "$CMD")" = "$ROOT/bin/expo-factory" ]; then
+  ok "install links the expo-factory command"
+else
+  fail "install links the expo-factory command"
+fi
+
+(cd "$WORK" && HOME="$H" "$CMD" help >/dev/null 2>&1)
+expect_exit "help exits 0 when run through the link from another folder" 0 $?
+
+(cd "$WORK" && HOME="$H" "$CMD" verify >/dev/null 2>&1)
+expect_exit "verify through the command exits 0" 0 $?
+
+HOME="$H" "$CMD" nonsense >/dev/null 2>&1
+expect_exit "unknown command exits 2" 2 $?
+
+printf 'First App\nBrief.\ny\n' | (cd "$WORK" && HOME="$H" "$CMD" new >/dev/null 2>&1)
+expect_exit "new without a saved folder (piped) exits 0" 0 $?
+[ -f "$H/Development/first-app/PROJECT_BRIEF.md" ] && ok "piped new uses ~/Development" || fail "piped new uses ~/Development"
+[ ! -e "$H/.config/expo-project-factory/projects-dir" ] && ok "piped new does not save a folder" || fail "piped new does not save a folder"
+
+HOME="$H" "$CMD" projects-dir "$H/Work Apps" >/dev/null 2>&1
+expect_exit "projects-dir saves a folder" 0 $?
+if [ "$(HOME="$H" "$CMD" projects-dir)" = "$H/Work Apps" ]; then
+  ok "projects-dir shows the saved folder"
+else
+  fail "projects-dir shows the saved folder"
+fi
+printf 'Second App\nBrief.\ny\n' | HOME="$H" "$CMD" new >/dev/null 2>&1
+[ -f "$H/Work Apps/second-app/PROJECT_BRIEF.md" ] && ok "new uses the saved folder (with a space in it)" || fail "new uses the saved folder (with a space in it)"
+
+printf 'Third App\nBrief.\ny\n' | HOME="$H" "$CMD" new "$H/Elsewhere" >/dev/null 2>&1
+[ -f "$H/Elsewhere/third-app/PROJECT_BRIEF.md" ] && ok "new <folder> overrides the saved folder" || fail "new <folder> overrides the saved folder"
+
+HOME="$H" "$CMD" projects-dir '~/Apps' >/dev/null 2>&1
+if [ "$(HOME="$H" "$CMD" projects-dir)" = "$H/Apps" ]; then
+  ok "projects-dir expands a leading ~"
+else
+  fail "projects-dir expands a leading ~"
+fi
+
+H="$(new_home command_conflict)"
+mkdir -p "$H/.local/bin"
+echo "something else" > "$H/.local/bin/expo-factory"
+printf '\n' | HOME="$H" ./scripts/install.sh >/dev/null 2>&1
+expect_exit "existing expo-factory file: install exits 1" 1 $?
+if [ ! -e "$H/.claude" ] && [ ! -e "$H/.agents" ] && [ "$(cat "$H/.local/bin/expo-factory")" = "something else" ]; then
+  ok "existing expo-factory file is left alone and nothing is installed"
+else
+  fail "existing expo-factory file is left alone and nothing is installed"
+fi
+
+echo "== bootstrap (one-line installer)"
+# A committed copy of the working tree stands in for the GitHub repository.
+SRC="$WORK/source-repo"
+mkdir -p "$SRC"
+(cd "$ROOT" && tar --exclude=.git -cf - .) | (cd "$SRC" && tar -xf -)
+git -C "$SRC" init --quiet
+git -C "$SRC" add -A
+git -C "$SRC" -c user.name=test -c user.email=test@example.invalid commit --quiet -m "snapshot"
+
+H="$(new_home bootstrap)"
+HOME="$H" EXPO_FACTORY_REPO="$SRC" bash "$ROOT/bootstrap.sh" </dev/null >"$WORK/bootstrap.out" 2>&1
+expect_exit "bootstrap installs" 0 $?
+B="$H/.expo-project-factory"
+[ -f "$B/factory/SKILL.md" ] && ok "bootstrap downloads the factory" || fail "bootstrap downloads the factory"
+if [ "$(readlink "$H/.claude/skills/expo-project-factory" 2>/dev/null)" = "$B/factory" ]; then
+  ok "bootstrap links the skill to the downloaded copy"
+else
+  fail "bootstrap links the skill to the downloaded copy"
+fi
+if [ "$(readlink "$H/.local/bin/expo-factory" 2>/dev/null)" = "$B/bin/expo-factory" ]; then
+  ok "bootstrap links the command to the downloaded copy"
+else
+  fail "bootstrap links the command to the downloaded copy"
+fi
+HOME="$H" "$H/.local/bin/expo-factory" verify >/dev/null 2>&1
+expect_exit "verify passes after bootstrap" 0 $?
+
+echo "- kept" >> "$H/.config/expo-project-factory/defaults.md"
+HOME="$H" EXPO_FACTORY_REPO="$SRC" bash "$ROOT/bootstrap.sh" </dev/null >/dev/null 2>&1
+expect_exit "bootstrap again (update) exits 0" 0 $?
+expect_line "bootstrap again keeps the defaults file" "$H/.config/expo-project-factory/defaults.md" "- kept"
+
+echo "change" > "$SRC/NEWFILE"
+git -C "$SRC" add -A
+git -C "$SRC" -c user.name=test -c user.email=test@example.invalid commit --quiet -m "update"
+HOME="$H" "$H/.local/bin/expo-factory" update >/dev/null 2>&1
+expect_exit "expo-factory update exits 0" 0 $?
+[ -f "$B/NEWFILE" ] && ok "update pulls the new version" || fail "update pulls the new version"
+
+cat "$ROOT/bootstrap.sh" | HOME="$(new_home bootstrap_piped)" EXPO_FACTORY_REPO="$SRC" bash >/dev/null 2>&1
+expect_exit "bootstrap piped into bash exits 0" 0 $?
+
+H="$(new_home bootstrap_occupied)"
+mkdir -p "$H/.expo-project-factory"
+echo "mine" > "$H/.expo-project-factory/notes.txt"
+HOME="$H" EXPO_FACTORY_REPO="$SRC" bash "$ROOT/bootstrap.sh" </dev/null >/dev/null 2>&1
+expect_exit "bootstrap refuses a folder with other files" 1 $?
+if [ "$(cat "$H/.expo-project-factory/notes.txt")" = "mine" ] && [ ! -e "$H/.claude" ]; then
+  ok "refused bootstrap changes nothing"
+else
+  fail "refused bootstrap changes nothing"
+fi
 
 echo
 echo "$PASSED passed, $FAILED failed"
