@@ -18,6 +18,7 @@ A project brief always wins over this file: if a brief says "web only" or
 - State management: not decided
 - Data fetching: not decided
 - Styling: not decided
+- Design direction: not decided
 - Backend / API: not decided
 - Database: not decided
 - Authentication: not decided

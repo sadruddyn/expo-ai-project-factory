@@ -44,6 +44,20 @@ Treat a defaults line that says `not decided` as open: propose the simplest opti
 
 Do not block the plan on questions. Produce the full plan from the best available answers, and ask at most three questions alongside it, only for choices that would be expensive to reverse once the first implementation phase is done (for example, the backend, or whether web is a target). Never ask for something the brief or the defaults file already states.
 
+### Design direction
+
+Users rarely describe a design, and should not have to. Work from what they give:
+
+- **References given** (a Figma link, screenshots, images in the project folder, or "like <some app>"): treat them as the source of truth for layout, colour and type. Read a Figma link through the Figma tools when they are available; if you cannot open it, say so and ask for screenshots instead of guessing. A named app is a reference for layout patterns and tone only: never copy its name, logo, artwork or exact screens.
+- **A feel described in words** ("calm and friendly", "bold and playful"): that is direction. Build the proposal on it and say that you did.
+- **Nothing given**: do not ask. Propose a direction that fits the product and the platform and put it in the plan: the overall feel in a phrase, the accent colour and how colour is used, light and dark mode, typography, navigation style, and the two or three screens that define the look.
+
+List every design choice the user did not state in the Assumptions. Tell the user once, in the plan, that they can change the direction in a sentence or send a Figma link or screenshots at any time.
+
+The built-in design default (native look, system fonts, one accent colour) is the starting point when the product gives no cue; go beyond it where the product clearly calls for something else, and list that as `proposed`.
+
+For a new app, plan a **design checkpoint**: Phase 1 scaffolds the app and builds only the two or three defining screens, with the real theme and realistic sample data, so the user's first approval produces something they can look at. Show them (screenshots when you can run the app, otherwise the exact command to run it) and wait for the user to confirm or correct the look before building the remaining screens. Skip the checkpoint when the user supplied a complete design.
+
 ### Remembering the user's stack
 
 The defaults file fills itself in from what the user approves, so they never have to edit it by hand.
@@ -62,10 +76,11 @@ Leave a decision out of the offer while a question you asked about it is still u
 
 Rules for writing the file:
 
-- Reusable stack decisions only: platforms, state management, data fetching, styling, backend, database, authentication, local storage, testing, package manager, and standing constraints. Never save product-specific choices such as a currency, a screen list, or one project's feature scope.
-- Change only the lines the user agreed to, keeping each line's existing `- <Decision>:` label. Leave every other line, including the user's own notes, exactly as it is.
+- Reusable stack decisions only: platforms, state management, data fetching, styling, design direction, backend, database, authentication, local storage, testing, package manager, and standing constraints. Never save product-specific choices such as a currency, a screen list, or one project's feature scope.
+- Change only the lines the user agreed to, keeping each line's existing `- <Decision>:` label. If a decision has no line yet, add one under `## Stack`. Leave every other line, including the user's own notes, exactly as it is.
 - If the file does not exist, create it with a `## Stack` heading and one `- <Decision>: <value>` line per saved decision.
 - If the user declines, do not ask again in this session. If they say never to ask, add `- Do not offer to save defaults` under "Anything else the agent should always know" and respect that line in future sessions.
+- For design, save only standing preferences ("always support dark mode", "keep the native look"). One app's colours, fonts and screens belong to that app and are never offered.
 - A one-project override ("this app uses Firebase") is not a standing preference. Do not offer to save it over an existing default.
 
 This is the only file outside the project that this skill may write, and only with the user's explicit yes.
@@ -111,14 +126,15 @@ Return a concise plan with:
 4. Relevant skills selected and missing skills.
 5. Proposed architecture and folder structure.
 6. Navigation and screen/module breakdown.
-7. State management and data-fetching strategy.
-8. Storage and authentication strategy, if applicable.
-9. Native capabilities and config plugins, if applicable.
-10. Proposed dependencies, with a reason for each; avoid unnecessary libraries.
-11. Security, privacy, accessibility, and performance considerations.
-12. Implementation phases.
-13. Exact verification commands and expected outcomes.
-14. Assumptions: every decision the brief did not state, each with its value and its source (`defaults file`, `inferred from brief`, `built-in default`, or `proposed`), so the user can correct any of them in one reply.
+7. Design direction: the feel, colour, light and dark mode, typography, the defining screens, and which reference (if any) it is based on.
+8. State management and data-fetching strategy.
+9. Storage and authentication strategy, if applicable.
+10. Native capabilities and config plugins, if applicable.
+11. Proposed dependencies, with a reason for each; avoid unnecessary libraries.
+12. Security, privacy, accessibility, and performance considerations.
+13. Implementation phases.
+14. Exact verification commands and expected outcomes.
+15. Assumptions: every decision the brief did not state, each with its value and its source (`defaults file`, `inferred from brief`, `built-in default`, or `proposed`), so the user can correct any of them in one reply.
 
 If the brief or the defaults file names a backend, find out whether it already exists. When it does not, include it in the architecture, dependency and phase sections as its own folder beside the app, and ask the user to confirm that this project should build it.
 
@@ -155,6 +171,7 @@ Use these only for decisions that the brief, the project, and the personal defau
 
 - Expo + React Native + TypeScript.
 - Target iOS and Android.
+- Design: the native look of each platform, system fonts, semantic colours, light and dark mode, and one accent colour.
 - Prefer Expo Router where appropriate.
 - Prefer native folders/prebuild when native configuration is required; do not hide important native changes.
 - Avoid unnecessary libraries, excessive abstractions, and over-engineered folder structures.
