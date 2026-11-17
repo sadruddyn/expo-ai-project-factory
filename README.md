@@ -16,7 +16,7 @@ You need macOS or Linux, Git, and Claude Code or Codex.
 curl -fsSL https://raw.githubusercontent.com/sadruddyn/expo-ai-project-factory/main/bootstrap.sh | bash
 ```
 
-This downloads the factory to `~/.expo-project-factory`, links the skill into your agents, and adds an `expo-factory` command. It asks one question, your usual backend. Press ENTER to decide later.
+This downloads the factory to `~/.expo-project-factory`, links the skill into your agents, and adds an `expo-factory` command. It asks one question, your usual backend: Node.js with NestJS and PostgreSQL, Node.js with Express, Supabase, Firebase, no backend, or decide later. Press ENTER to decide later. For anything else, name it in a project's brief or tell the agent "from now on use ...".
 
 <details>
 <summary>Prefer not to pipe a script into your shell?</summary>
